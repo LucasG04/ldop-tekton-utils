@@ -2,6 +2,8 @@ apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: git-clone
+  labels:
+    {{- include "basic.labels" . | nindent 4 }}
 spec:
   params:
     - name: url
