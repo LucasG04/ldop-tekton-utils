@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone-read
+spec:
+  description: Clones a git repo, then echoes the README file to the stout.
+  params:
+    - name: repo-url
+      type: string
+      description: The git repo URL to clone from.
+  workspaces:
+    - name: shared-data
+      description: Workspace containing the cloned repo files, so they can be read by the next task.
+  tasks:
+    - name: clone
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.repo-url)
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: read-readme
+      runAfter:
+        - clone
+      taskRef:
+        name: read-file
+      workspaces:
+        - name: source
+          workspace: shared-data
