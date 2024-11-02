@@ -23,26 +23,3 @@ spec:
   workspaces:
     - name: output
       description: The workspace where the repository will be cloned.
----
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: read-file
-  labels:
-    {{- include "basic.labels" . | nindent 4 }}
-spec:
-  params:
-    - name: path
-      type: string
-      description: The relative path to the file in the workspace to read.
-  steps:
-    - name: read
-      image: alpine
-      script: |
-        #!/bin/sh
-        set -e
-        cat $(workspaces.source.path)/$(params.path)
-  workspaces:
-    - name: source
-      description: The workspace where the file to read is located.
----
