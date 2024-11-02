@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: clone-read
+  name: read-repo-readme
 spec:
   description: Clones a git repo, then echoes the README file to the stout.
   params:
@@ -26,6 +26,9 @@ spec:
         - clone
       taskRef:
         name: read-file
+      params:
+        - name: path
+          value: README.md
       workspaces:
         - name: source
           workspace: shared-data
