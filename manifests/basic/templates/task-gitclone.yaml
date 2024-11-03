@@ -15,7 +15,7 @@ spec:
       script: |
         #!/bin/sh
         set -e
-        git clone $(params.url)
+        git clone $(params.url) $(workspaces.output.path)
   workspaces:
     - name: output
       description: The workspace where the repository will be cloned.
