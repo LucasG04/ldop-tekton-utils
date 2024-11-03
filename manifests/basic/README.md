@@ -11,7 +11,9 @@ spec:
     name: read-repo-readme
   params:
     - name: repo-url
-      value: https://github.com/LucasG04/ldop-tekton-examples.git
+      value: https://github.com/octocat/Hello-World.git
+    - name: revision
+      value: master
   workspaces:
     - name: shared-data
       volumeClaimTemplate:

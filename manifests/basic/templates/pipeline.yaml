@@ -8,6 +8,9 @@ spec:
     - name: repo-url
       type: string
       description: The git repo URL to clone from.
+    - name: repo-revision
+      type: string
+      description: The git revision (branch, tag, commit SHA) to checkout.
   workspaces:
     - name: shared-data
       description: |
@@ -19,6 +22,8 @@ spec:
       params:
         - name: url
           value: $(params.repo-url)
+        - name: revision
+          value: $(params.repo-revision)
       workspaces:
         - name: output
           workspace: shared-data
