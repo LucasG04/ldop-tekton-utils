@@ -12,8 +12,6 @@ spec:
   params:
     - name: repo-url
       value: https://github.com/octocat/Hello-World.git
-    - name: revision
-      value: master
   workspaces:
     - name: shared-data
       volumeClaimTemplate:
