@@ -20,7 +20,7 @@ spec:
         - name: url
           value: $(params.repo-url)
       workspaces:
-        - name: output
+        - name: source
           workspace: shared-data
     - name: read-readme
       runAfter:
