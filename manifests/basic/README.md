@@ -1,3 +1,6 @@
+Example for running the pipeline with a PipelineRun:
+
+```yaml
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
@@ -18,3 +21,4 @@ spec:
           resources:
             requests:
               storage: 1Gi
+```
