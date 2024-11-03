@@ -11,7 +11,7 @@ spec:
     name: read-repo-readme
   params:
     - name: repo-url
-      value: https://github.com/octocat/Hello-World.git
+      value: https://github.com/LucasG04/expense-tracker.git
   workspaces:
     - name: shared-data
       volumeClaimTemplate:
