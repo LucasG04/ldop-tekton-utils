@@ -1,7 +1,10 @@
+{{- range $v := .Values.repos }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: polling-triggers
+  name: {{ include "polling.fullname" . }}
+  labels:
+    {{- include "polling.labels" . | nindent 4 }}
 spec:
   schedule: "*/1 * * * *"
   jobTemplate:
@@ -9,24 +12,20 @@ spec:
       template:
         spec:
           containers:
-            - name: polling-triggers
+            - name: {{ include "polling.fullname" . }}-job-{{ $v.repoName }}
               volumeMounts:
                 - name: polledrepos
                   mountPath: /repos
               image: registry.redhat.io/rhel8/toolbox:latest
               env:
-                - name: REPONAME
-                  value: pipelines-vote-ui
-                - name: REPOBASEURL
-                  value: https://github.com/bysnupy
-                - name: REPOBRANCH
-                  value: main
                 - name: REPOURL
-                  value: https://github.com/bysnupy/pipelines-vote-ui
+                  value: {{ $v.repoUrl }}
+                - name: REPONAME
+                  value: {{ $v.repoName }}
+                - name: REPOBRANCH
+                  value: {{ $v.branch }}
                 - name: EVENTLISTENER_SVC_URL
-                  value: "http://el-vote-app.pipelines-tutorial.svc.cluster.local:8080"
-                - name: JSONTEMPLATE
-                  value: '{"object_kind": "push","event_name": "push","head_commit": {"id": "GITHUBREPOREV"},"repository": {"name": "GITHUBREPONAME","url": "GITHUBREPOURL"}}'
+                  value: {{ $v.eventListenerSvcUrl }}
               command:
                 - /bin/bash
               args:
@@ -36,22 +35,29 @@ spec:
 
                   BASEDIR="/repos"
 
-                  # revision initialization
-                  _current_revision=$(git ls-remote --heads ${REPOBASEURL}/${REPONAME} ${REPOBRANCH} | awk '{print $1}')
+                  # Revision initialization
+                  _current_revision=$(git ls-remote --heads ${REPOURL} ${REPOBRANCH} | awk '{print $1}')
                   _prev_revision=${_current_revision}
 
-                  # if there is not existing previous revision data file, creating new revision data file with current revision
+                  # If there is no existing previous revision data file, create a new revision data file with the current revision
                   if [ -f ${BASEDIR}/${REPONAME}.sha256 ]; then
                       _prev_revision=$(cat ${BASEDIR}/${REPONAME}.sha256)
                   else
                       echo ${_current_revision} >${BASEDIR}/${REPONAME}.sha256
                   fi
 
-                  # generating JSON data
-                  _jsondata=$(echo ${JSONTEMPLATE} | sed -e "s=GITHUBREPOREV=${_current_revision}=" -e "s=GITHUBREPONAME=${REPONAME}=" -e "s=GITHUBREPOURL=${REPOURL}=")
+                  # Generating JSON data
+                  _jsondata=$(cat <<EOF
+                  {
+                      "revision": "${_current_revision}",
+                      "repository_url": "${REPOURL}",
+                      "repository_name": "${REPONAME}"
+                  }
+                  EOF
+                  )
 
-                  # check if there are any changes through comparing previous and current revisions.
-                  # If there are any changes, trigger a new pipeline using curl and json data.
+                  # Check if there are any changes by comparing previous and current revisions.
+                  # If there are changes, trigger a new pipeline using curl and json data.
                   if [ "${_current_revision}" != "${_prev_revision}" ]; then
                       echo ${_current_revision} >${BASEDIR}/${REPONAME}.sha256
                       curl -s -X POST -H 'Content-Type: application/json' -d "${_jsondata}" ${EVENTLISTENER_SVC_URL}
@@ -62,4 +68,5 @@ spec:
           volumes:
             - name: polledrepos
               persistentVolumeClaim:
-                claimName: polledrepos-pvc
+                claimName: {{ include "polling.fullname" . }}
+{{- end }}

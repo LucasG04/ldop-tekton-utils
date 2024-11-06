@@ -2,6 +2,8 @@ apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: read-repo-readme
+  labels:
+    {{- include "basic.labels" . | nindent 4}}
 spec:
   description: Clones a git repo, then echoes the README file to the stout.
   params:

@@ -1,0 +1,9 @@
+repos:
+  - repoName: expense-tracker
+    repoUrl: https://github.com/LucasG04/expense-tracker
+    branch: master
+    eventListenerSvcUrl: http://el-service-expense-tracker:8080
+  - repoName: easy-code-copy
+    repoUrl: https://github.com/LucasG04/easy-code-copy
+    branch: main
+    eventListenerSvcUrl: http://el-service-easy-code-copy:8080
