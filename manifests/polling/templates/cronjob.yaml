@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: polling-triggers
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: polling-triggers
+              volumeMounts:
+                - name: polledrepos
+                  mountPath: /repos
+              image: registry.redhat.io/rhel8/toolbox:latest
+              env:
+                - name: REPONAME
+                  value: pipelines-vote-ui
+                - name: REPOBASEURL
+                  value: https://github.com/bysnupy
+                - name: REPOBRANCH
+                  value: main
+                - name: REPOURL
+                  value: https://github.com/bysnupy/pipelines-vote-ui
+                - name: EVENTLISTENER_SVC_URL
+                  value: "http://el-vote-app.pipelines-tutorial.svc.cluster.local:8080"
+                - name: JSONTEMPLATE
+                  value: '{"object_kind": "push","event_name": "push","head_commit": {"id": "GITHUBREPOREV"},"repository": {"name": "GITHUBREPONAME","url": "GITHUBREPOURL"}}'
+              command:
+                - /bin/bash
+              args:
+                - -c
+                - |
+                  set -eu
+
+                  BASEDIR="/repos"
+
+                  # revision initialization
+                  _current_revision=$(git ls-remote --heads ${REPOBASEURL}/${REPONAME} ${REPOBRANCH} | awk '{print $1}')
+                  _prev_revision=${_current_revision}
+
+                  # if there is not existing previous revision data file, creating new revision data file with current revision
+                  if [ -f ${BASEDIR}/${REPONAME}.sha256 ]; then
+                      _prev_revision=$(cat ${BASEDIR}/${REPONAME}.sha256)
+                  else
+                      echo ${_current_revision} >${BASEDIR}/${REPONAME}.sha256
+                  fi
+
+                  # generating JSON data
+                  _jsondata=$(echo ${JSONTEMPLATE} | sed -e "s=GITHUBREPOREV=${_current_revision}=" -e "s=GITHUBREPONAME=${REPONAME}=" -e "s=GITHUBREPOURL=${REPOURL}=")
+
+                  # check if there are any changes through comparing previous and current revisions.
+                  # If there are any changes, trigger a new pipeline using curl and json data.
+                  if [ "${_current_revision}" != "${_prev_revision}" ]; then
+                      echo ${_current_revision} >${BASEDIR}/${REPONAME}.sha256
+                      curl -s -X POST -H 'Content-Type: application/json' -d "${_jsondata}" ${EVENTLISTENER_SVC_URL}
+                  else
+                      echo "No changes"
+                  fi
+          restartPolicy: Never
+          volumes:
+            - name: polledrepos
+              persistentVolumeClaim:
+                claimName: polledrepos-pvc
