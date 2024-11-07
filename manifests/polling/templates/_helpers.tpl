@@ -2,7 +2,7 @@
 Expand the name of the chart.
 */}}
 {{- define "polling.name" -}}
-{{- default .Chart.Name | trunc 63 | trimSuffix "-" }}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -44,15 +44,4 @@ Selector labels
 {{- define "polling.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "polling.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "polling.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "polling.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
 {{- end }}

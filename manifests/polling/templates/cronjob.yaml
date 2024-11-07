@@ -1,10 +1,13 @@
+# define vars so they can be used in the range loop
+{{- $dot := . }}
+
 {{- range $v := .Values.repos }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "polling.fullname" . }}
+  name: {{ include "polling.fullname" $dot }}
   labels:
-    {{- include "polling.labels" . | nindent 4 }}
+    {{- include "polling.labels" $dot | nindent 4 }}
 spec:
   schedule: "*/1 * * * *"
   jobTemplate:
@@ -12,7 +15,7 @@ spec:
       template:
         spec:
           containers:
-            - name: {{ include "polling.fullname" . }}-job-{{ $v.repoName }}
+            - name: {{ include "polling.fullname" $dot }}-job-{{ $v.repoName }}
               volumeMounts:
                 - name: polledrepos
                   mountPath: /repos
@@ -68,5 +71,6 @@ spec:
           volumes:
             - name: polledrepos
               persistentVolumeClaim:
-                claimName: {{ include "polling.fullname" . }}
+                claimName: {{ include "polling.fullname" $dot }}
+---
 {{- end }}
