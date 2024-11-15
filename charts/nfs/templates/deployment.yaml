@@ -8,7 +8,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nfs-server
+      {{- include "nfs.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
