@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nfs-server
+spec:
+  destination:
+    name: in-cluster
+    namespace: nfs
+  source:
+    path: charts/nfs
+    repoURL: https://github.com/LucasG04/ldop-tekton-utils.git
+    targetRevision: main
+  project: default
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
