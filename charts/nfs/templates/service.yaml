@@ -8,21 +8,27 @@ spec:
   selector:
     {{- include "nfs.selectorLabels" . | nindent 4 }}
   ports:
-    - protocol: TCP
+    - name: tcp-2049
+      protocol: TCP
       port: 2049
       targetPort: 2049
-    - protocol: TCP
+    - name: tcp-20048
+      protocol: TCP
       port: 20048
       targetPort: 20048
-    - protocol: TCP
+    - name: tcp-111
+      protocol: TCP
       port: 111
       targetPort: 111
-    - protocol: UDP
+    - name: udp-2049
+      protocol: UDP
       port: 2049
       targetPort: 2049
-    - protocol: UDP
+    - name: udp-20048
+      protocol: UDP
       port: 20048
       targetPort: 20048
-    - protocol: UDP
+    - name: udp-111
+      protocol: UDP
       port: 111
       targetPort: 111
